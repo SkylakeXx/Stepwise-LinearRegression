@@ -1,7 +1,9 @@
 from statsmodels.regression.linear_model import OLS
+from sklearn_wrapper import SkWrapper
 from sklearn.model_selection import cross_val_score
 import pandas as pd
 import numpy as np
+from sklearn import metrics
 
 
 class SLR:
@@ -16,9 +18,11 @@ class SLR:
         self.iter = 0
         self.cols_ls = []
         self.is_done = False
+        self.ols = SkWrapper(OLS)
 
     def __get_score(self, col_, X, y):
-        return {col_:np.mean(cross_val_score(OLS, X, y, cv=5, scoring=self.error_f))}
+        # print(metrics.get_scorer_names())
+        return np.mean(cross_val_score(self.ols, X, y, cv=5, scoring=self.error_f))
 
     def __get_cols(self):
         set_used_cols = set(self.cols_ls)
@@ -29,7 +33,7 @@ class SLR:
     def _run(self):
         while self.iter<=len(self.matrix.columns):
             self.__run_iteration()
-            if self.is_done:
+            if (self.is_done) or (self.iter>=self.X.shape[1]):
                 break
         return self.__get_summary()
 
@@ -40,7 +44,7 @@ class SLR:
         if len(self.cols_ls)>0:
             baseX = self.X[self.cols_ls].values
         else:
-            baseX=np.array([], dtype=np.float32).reshape(len(self.matrix.columns),-1)
+            baseX=np.array([], dtype=np.float32).reshape(self.y.shape[0],-1)
         top_score = -np.inf if self.gib else np.inf
         top_col = None
         for col_ in iter_columns_:
@@ -48,12 +52,18 @@ class SLR:
             X = np.hstack((baseX,by.reshape(-1,1)))
             y = self.y
             new_score = self.__get_score(col_, X, y)
-            if self.__is_better(base_score, new_score):
+            if self.__is_better(top_score, new_score):
                 top_score = new_score
                 top_col = col_
         if not self.__is_better(self.iter_ls[-1], top_score):
             self.is_done = True
-        self.matrix.loc[iter:, col_] = True
+            
+        print(self.matrix.shape)
+        print(top_col)
+        print(iter_)
+        print(top_score)
+        print("\n")
+        self.matrix.loc[iter_:, col_] = True
         self.iter_ls.append(top_score)
         self.cols_ls.append(top_col)    
     
