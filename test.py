@@ -22,7 +22,7 @@ params_dict = {
 }
 
 if __name__=="__main__":
-    X,y = getTestData(n_features=100, n_informative=25, n_samples=1000,sigmaStd=.1)
+    X,y = getTestData(n_features=134, n_informative=25, n_samples=139,sigmaStd=.1)
     _ = SLR(X, y, k_folds=5, greater_is_better=False, **params_dict)._run()
     
     

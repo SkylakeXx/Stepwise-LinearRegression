@@ -22,6 +22,7 @@ class SLR:
 
     def __get_score(self, col_, X, y):
         # print(metrics.get_scorer_names())
+        # print(cross_val_score(self.ols, X, y, cv=5, scoring=self.error_f))
         return np.mean(cross_val_score(self.ols, X, y, cv=5, scoring=self.error_f))
 
     def __get_cols(self):
@@ -33,7 +34,7 @@ class SLR:
     def _run(self):
         while self.iter<=len(self.matrix.columns):
             self.__run_iteration()
-            if (self.is_done) or (self.iter>=self.X.shape[1]):
+            if self.is_done:
                 break
         return self.__get_summary()
 
@@ -51,14 +52,16 @@ class SLR:
             by = self.X[[col_]].values
             X = np.hstack((baseX,by.reshape(-1,1)))
             y = self.y
+            # print("-------------------------------------")
+            # print(col_)
             new_score = self.__get_score(col_, X, y)
+            # print("-------------------------------------")
             if self.__is_better(top_score, new_score):
                 top_score = new_score
                 top_col = col_
         if not self.__is_better(self.iter_ls[-1], top_score):
             self.is_done = True
-            
-        print(self.matrix.shape)
+        print(X.shape, y.shape)
         print(top_col)
         print(iter_)
         print(top_score)
